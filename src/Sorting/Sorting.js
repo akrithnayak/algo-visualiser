@@ -475,8 +475,8 @@ class SortingVisualiser extends Component {
       <div>
         <Navbar dark expand="md" className="bg-dark">
           <div className="container">
-            <NavbarBrand className="mr-auto" href="/">
-              Algo-visualiser
+            <NavbarBrand className="mr-auto">
+              <Link to="/">Algo-visualiser</Link>
             </NavbarBrand>
             <Nav navbar className="row">
               <NavItem className="mr-5 text-white" style={{ width: "30px" }}>
