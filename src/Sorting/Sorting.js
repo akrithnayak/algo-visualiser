@@ -100,6 +100,7 @@ class SortingVisualiser extends Component {
 
   mergeSort = () => {
     const animations = mergeSort(this.state.array);
+    console.log(animations);
     for (var i = 0; i < animations.length; i++) {
       const arraybars = document.getElementsByClassName("array-bar");
       if (i % 3 !== 2) {
@@ -471,7 +472,7 @@ class SortingVisualiser extends Component {
 
   render() {
     return (
-      <div id="sort">
+      <div>
         <Navbar dark expand="md" className="bg-dark">
           <div className="container">
             <NavbarBrand className="mr-auto" href="/">
