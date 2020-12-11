@@ -7,6 +7,7 @@ import { dijkstras } from "./pathfindingalgos/dijkstras";
 import { bfs } from "./pathfindingalgos/bfs";
 import { dfs } from "./pathfindingalgos/dfs";
 import { recursiveDivision } from "./mazealgos/recursiveDivision";
+import { Link } from "react-router-dom";
 
 var START_NODE_ROW = 10;
 var START_NODE_COL = 15;
