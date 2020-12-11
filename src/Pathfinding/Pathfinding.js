@@ -416,7 +416,9 @@ export default class PathFindingVisualiser extends Component {
         <Navbar dark expand="md" className="bg-dark">
           <div className="container">
             <NavbarBrand className="mr-auto">
-              <Link to="/">Algo-visualiser</Link>
+              <Link className="text-decoration-none text-light" to="/">
+                Algo-visualiser
+              </Link>
             </NavbarBrand>
             <Nav navbar className="row">
               <NavItem className="mr-3">
