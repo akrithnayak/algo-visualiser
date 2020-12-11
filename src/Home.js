@@ -17,13 +17,13 @@ class Home extends Component {
         <h5 style={{ marginTop: "100px" }}>Select any one:</h5>
         <div className="mt-5">
           <a
-            href="/algo-visualiser/sorting"
+            href="/algo-visualiser/#sorting"
             className="btn btn-outline-light mr-1"
           >
             Sorting visualization
           </a>
           <a
-            href="/algo-visualiser/pathfinding"
+            href="/algo-visualiser/#pathfinding"
             className="btn btn-outline-light"
           >
             Pathfinding visualization
