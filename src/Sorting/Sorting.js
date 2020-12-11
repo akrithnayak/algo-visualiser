@@ -8,6 +8,7 @@ import { mergeSort } from "./sortingalgos/mergeSort";
 import { quickSort } from "./sortingalgos/quickSort";
 import { reverseSort } from "./sortingalgos/reverseSort";
 import { selectionSort } from "./sortingalgos/selectionSort";
+import { Link } from "react-router-dom";
 
 const ArrayBar = ({ array, pixel }) => {
   const bars = array.map((value, idx) => {
