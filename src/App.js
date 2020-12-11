@@ -1,12 +1,6 @@
 import SortingVisualiser from "./Sorting/Sorting";
 import "bootstrap/dist/css/bootstrap.min.css";
-import {
-  Switch,
-  Route,
-  Redirect,
-  HashRouter,
-  BrowserRouter,
-} from "react-router-dom";
+import { Switch, Route, Redirect, HashRouter } from "react-router-dom";
 import PathFindingVisualiser from "./Pathfinding/Pathfinding";
 import Home from "./Home";
 
