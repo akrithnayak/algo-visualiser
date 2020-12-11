@@ -5,6 +5,7 @@ import PathFindingVisualiser from "./Pathfinding/Pathfinding";
 import Home from "./Home";
 
 function App() {
+  console.log(process.env.REACT_APP_PUBLIC_URL);
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL}>
       <Switch>
