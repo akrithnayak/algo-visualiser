@@ -13,7 +13,7 @@ import Home from "./Home";
 function App() {
   console.log(process.env.REACT_APP_PUBLIC_URL);
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Switch>
         <Route path="/algo-visualiser/sorting" exact>
           <SortingVisualiser />
@@ -26,7 +26,7 @@ function App() {
         </Route>
         <Redirect to="/" />
       </Switch>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
