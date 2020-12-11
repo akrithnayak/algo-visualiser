@@ -7,7 +7,7 @@ import Home from "./Home";
 function App() {
   console.log(process.env.REACT_APP_PUBLIC_URL);
   return (
-    <HashRouter basename={process.env.REACT_APP_PUBLIC_URL}>
+    <HashRouter>
       <Switch>
         <Route path="/sorting" exact>
           <SortingVisualiser />
