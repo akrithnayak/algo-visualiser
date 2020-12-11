@@ -1,4 +1,5 @@
 import { Component } from "react";
+import { Link } from "react-router-dom";
 
 class Home extends Component {
   state = {};
@@ -16,18 +17,18 @@ class Home extends Component {
         <h1>Welcome to Algo-Visualiser</h1>
         <h5 style={{ marginTop: "100px" }}>Select any one:</h5>
         <div className="mt-5">
-          <a
+          <Link
             href="/algo-visualiser/#sorting"
             className="btn btn-outline-light mr-1"
           >
             Sorting visualization
-          </a>
-          <a
+          </Link>
+          <Link
             href="/algo-visualiser/#pathfinding"
             className="btn btn-outline-light"
           >
             Pathfinding visualization
-          </a>
+          </Link>
         </div>
       </div>
     );
