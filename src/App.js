@@ -1,18 +1,24 @@
 import SortingVisualiser from "./Sorting/Sorting";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Switch, Route, Redirect, HashRouter } from "react-router-dom";
+import {
+  Switch,
+  Route,
+  Redirect,
+  HashRouter,
+  BrowserRouter,
+} from "react-router-dom";
 import PathFindingVisualiser from "./Pathfinding/Pathfinding";
 import Home from "./Home";
 
 function App() {
   console.log(process.env.REACT_APP_PUBLIC_URL);
   return (
-    <HashRouter basename={process.env.REACT_APP_PUBLIC_URL}>
+    <BrowserRouter>
       <Switch>
-        <Route path="/sorting" exact>
+        <Route path="/algo-visualiser/sorting" exact>
           <SortingVisualiser />
         </Route>
-        <Route path="/pathfinding" exact>
+        <Route path="/algo-visualiser/pathfinding" exact>
           <PathFindingVisualiser />
         </Route>
         <Route path="/">
@@ -20,7 +26,7 @@ function App() {
         </Route>
         <Redirect to="/" />
       </Switch>
-    </HashRouter>
+    </BrowserRouter>
   );
 }
 
