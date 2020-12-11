@@ -1,24 +1,25 @@
-import logo from './logo.svg';
-import './App.css';
+import SortingVisualiser from "./Sorting/Sorting";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
+import PathFindingVisualiser from "./Pathfinding/Pathfinding";
+import Home from "./Home";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Switch>
+        <Route path="/sorting" exact>
+          <SortingVisualiser />
+        </Route>
+        <Route path="/pathfinding" exact>
+          <PathFindingVisualiser />
+        </Route>
+        <Route path="/">
+          <Home />
+        </Route>
+        <Redirect to="/" />
+      </Switch>
+    </BrowserRouter>
   );
 }
 

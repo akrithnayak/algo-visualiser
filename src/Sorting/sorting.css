@@ -1,0 +1,10 @@
+.array-bar {
+  float: left;
+}
+
+#array-bar {
+  height: 510px;
+  background-color: black;
+  margin-top: 100px;
+  padding: 0;
+}
