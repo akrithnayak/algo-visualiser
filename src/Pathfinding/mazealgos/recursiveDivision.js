@@ -24,7 +24,6 @@ export const recursiveDivision = (
     grid[grid.length - 1][i].isWall = true;
     wallsOrder.push(grid[grid.length - 1][i]);
   }
-  console.log(orientation);
   if (orientation === undefined)
     divide(grid, x_st + 1, y_st + 1, x_end - 1, y_end - 1, wallsOrder);
   else

@@ -8,6 +8,16 @@ import { bfs } from "./pathfindingalgos/bfs";
 import { dfs } from "./pathfindingalgos/dfs";
 import { recursiveDivision } from "./mazealgos/recursiveDivision";
 import { Link } from "react-router-dom";
+import {
+  animateVisiting,
+  getNodesInShortestPathOrder,
+} from "./helpers/animation";
+import {
+  generateNodes,
+  getNewNodesWithNewEnds,
+  getNewNodesWithWallToggled,
+  resetEnds,
+} from "./helpers/nodes";
 
 var START_NODE_ROW = 10;
 var START_NODE_COL = 15;
@@ -28,33 +38,65 @@ export default class PathFindingVisualiser extends Component {
     prevNode: null,
   };
 
+  animateWalls(wallsVisitedOrder, nodes) {
+    for (var i = 0; i < wallsVisitedOrder.length - 1; i++) {
+      const node = wallsVisitedOrder[i];
+      if (node.isFinish || node.isStart) {
+        node.isWall = false;
+        continue;
+      }
+      timeouts.push(
+        setTimeout(() => {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+            "node node-wall";
+        }, i * ANIMATION_SPEED_MS)
+      );
+    }
+    const node = wallsVisitedOrder[wallsVisitedOrder.length - 1];
+    timeouts.push(
+      setTimeout(() => {
+        document.getElementById(`node-${node.row}-${node.col}`).className =
+          "node node-wall";
+        this.setState({
+          nodes,
+        });
+      }, i * ANIMATION_SPEED_MS)
+    );
+  }
+
   componentDidMount() {
-    this.setState({ nodes: generateNodes() });
+    this.setState({
+      nodes: generateNodes(
+        START_NODE_ROW,
+        START_NODE_COL,
+        FINISH_NODE_ROW,
+        FINISH_NODE_COL
+      ),
+    });
   }
 
   handleMouseDown(row, col) {
+    if (row < 0 || row > 19 || col < 0 || col > 54) return;
     if (this.state.isBusy) return;
     var newNodes;
-    if (
-      this.state.nodes[row][col].isFinish ||
-      this.state.nodes[row][col].isStart
-    ) {
-      if (this.state.nodes[row][col].isFinish) {
-        this.setState({ finishChanged: true });
-      } else {
-        this.setState({ startChanged: true });
-      }
+    if (this.state.nodes[row][col].isFinish) {
       newNodes = resetEnds(this.state.nodes, row, col);
+      this.setState({ finishChanged: true });
+    } else if (this.state.nodes[row][col].isStart) {
+      newNodes = resetEnds(this.state.nodes, row, col);
+      this.setState({ startChanged: true });
     } else newNodes = getNewNodesWithWallToggled(this.state.nodes, row, col);
     this.setState({ nodes: newNodes, mouseIsPressed: true });
   }
 
   handleMouseEnter(row, col) {
+    if (row < 0 || row > 19 || col < 0 || col > 54) return;
     if (!this.state.mouseIsPressed || this.state.isBusy) return;
-    if (this.state.startChanged || this.state.finishChanged) {
-      this.setState({
-        prevNode: this.state.nodes[row][col],
-      });
+    if (this.state.startChanged) {
+      if (this.state.nodes[row][col].isWall)
+        this.setState({
+          prevNode: this.state.nodes[row][col],
+        });
       const newNodes = getNewNodesWithNewEnds(
         this.state.nodes,
         row,
@@ -62,6 +104,25 @@ export default class PathFindingVisualiser extends Component {
         this.state.startChanged,
         this.state.finishChanged
       );
+      START_NODE_ROW = row;
+      START_NODE_COL = col;
+      this.setState({ nodes: newNodes });
+      return;
+    }
+    if (this.state.finishChanged) {
+      if (this.state.nodes[row][col].isWall)
+        this.setState({
+          prevNode: this.state.nodes[row][col],
+        });
+      const newNodes = getNewNodesWithNewEnds(
+        this.state.nodes,
+        row,
+        col,
+        this.state.startChanged,
+        this.state.finishChanged
+      );
+      FINISH_NODE_ROW = row;
+      FINISH_NODE_COL = col;
       this.setState({ nodes: newNodes });
       return;
     }
@@ -76,19 +137,19 @@ export default class PathFindingVisualiser extends Component {
   }
 
   handleMouseLeave(row, col) {
+    if (row < 0 || row > 19 || col < 0 || col > 54) return;
     if (this.state.isBusy) return;
     if (this.state.startChanged || this.state.finishChanged) {
       const newNodes = resetEnds(this.state.nodes, row, col);
       if (this.state.prevNode) newNodes[row][col] = this.state.prevNode;
       this.setState({ nodes: newNodes, prevNode: null });
-      return;
     }
   }
 
   handleMouseUp(row, col) {
+    if (row < 0 || row > 19 || col < 0 || col > 54) return;
     if (this.state.isBusy) return;
-    this.setState({ mouseIsPressed: false });
-    if (this.state.startChanged || this.state.finishChanged) {
+    if (this.state.startChanged) {
       const newNodes = getNewNodesWithNewEnds(
         this.state.nodes,
         row,
@@ -96,194 +157,68 @@ export default class PathFindingVisualiser extends Component {
         this.state.startChanged,
         this.state.finishChanged
       );
+      START_NODE_ROW = row;
+      START_NODE_COL = col;
+
       this.setState({
         nodes: newNodes,
         startChanged: false,
+      });
+    } else if (this.state.finishChanged) {
+      const newNodes = getNewNodesWithNewEnds(
+        this.state.nodes,
+        row,
+        col,
+        this.state.startChanged,
+        this.state.finishChanged
+      );
+      FINISH_NODE_ROW = row;
+      FINISH_NODE_COL = col;
+      this.setState({
+        nodes: newNodes,
         finishChanged: false,
       });
     }
+    this.setState({ mouseIsPressed: false });
   }
 
-  getNodesInShortestPathOrder(finishNode) {
-    const nodesInShortestPathOrder = [];
-    let currentNode = finishNode;
-    while (currentNode !== null) {
-      nodesInShortestPathOrder.unshift(currentNode);
-      currentNode = currentNode.previousNode;
-    }
-    return nodesInShortestPathOrder;
-  }
-
-  animateVisiting(visitedOrder, shortestPath) {
-    for (let i = 0; i <= visitedOrder.length; i++) {
-      if (i === visitedOrder.length) {
-        timeouts.push(
-          setTimeout(() => {
-            this.animateShortestPath(shortestPath);
-          }, i * ANIMATION_SPEED_MS)
-        );
-        return;
-      }
-      const node = visitedOrder[i];
-      if (node.isFinish || node.isStart) continue;
-      if (node.isWall) {
-        timeouts.push(
-          setTimeout(() => {
-            document.getElementById(`node-${node.row}-${node.col}`).className =
-              "node node-wall node-visited";
-          }, i * ANIMATION_SPEED_MS)
-        );
-        continue;
-      }
-      timeouts.push(
-        setTimeout(() => {
-          document.getElementById(`node-${node.row}-${node.col}`).className =
-            "node node-visited";
-        }, i * ANIMATION_SPEED_MS)
-      );
-    }
-  }
-
-  animateWalls(wallsVisitedOrder, nodes) {
-    for (var i = 0; i < wallsVisitedOrder.length; i++) {
-      const node = wallsVisitedOrder[i];
-      if (i === wallsVisitedOrder.length - 1) {
-        timeouts.push(
-          setTimeout(() => {
-            document.getElementById(`node-${node.row}-${node.col}`).className =
-              "node node-wall";
-            this.setState({ nodes });
-          }, i * ANIMATION_SPEED_MS)
-        );
-        continue;
-      }
-      if (node.isFinish || node.isStart) {
-        node.isWall = false;
-        continue;
-      }
-
-      timeouts.push(
-        setTimeout(() => {
-          document.getElementById(`node-${node.row}-${node.col}`).className =
-            "node node-wall";
-        }, i * ANIMATION_SPEED_MS)
-      );
-    }
-  }
-
-  animateShortestPath(nodesInShortestPathOrder) {
-    for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
-      const node = nodesInShortestPathOrder[i];
-      if (node.isStart) {
-        timeouts.push(
-          setTimeout(() => {
-            document.getElementById(`node-${node.row}-${node.col}`).className =
-              "node node-start nodes-bg";
-          }, i * ANIMATION_SPEED_MS)
-        );
-        continue;
-      }
-      if (node.isFinish) {
-        timeouts.push(
-          setTimeout(() => {
-            document.getElementById(`node-${node.row}-${node.col}`).className =
-              "node node-finish nodes-bg";
-          }, i * ANIMATION_SPEED_MS)
-        );
-        continue;
-      }
-      timeouts.push(
-        setTimeout(() => {
-          document.getElementById(`node-${node.row}-${node.col}`).className =
-            "node node-shortest-path";
-        }, i * ANIMATION_SPEED_MS)
-      );
-    }
-    this.setState({ isBusy: false });
-  }
-
-  resetPath() {
-    for (var i = 0; i < this.state.nodes.length; i++) {
-      for (var j = 0; j < this.state.nodes[i].length; j++) {
-        const node = this.state.nodes[i][j];
-        node.isVisited = false;
-        node.distance = Infinity;
-        node.previousNode = null;
-        if (node.isStart) {
-          document.getElementById(`node-${node.row}-${node.col}`).className =
-            "node node-start";
-          continue;
-        }
-        if (node.isFinish) {
-          document.getElementById(`node-${node.row}-${node.col}`).className =
-            "node node-finish";
-          continue;
-        }
-        if (node.isWall) {
-          document.getElementById(`node-${node.row}-${node.col}`).className =
-            "node node-wall";
-          continue;
-        }
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          "node";
-      }
-    }
-  }
-
-  recursiveDiv(orientation) {
-    this.reset();
-    const wallsOrder = recursiveDivision(
-      this.state.nodes,
-      0,
-      0,
-      20,
-      55,
-      orientation
-    );
-    this.animateWalls(wallsOrder, this.state.nodes);
-  }
-
-  dijkstras() {
-    this.resetPath();
-    this.setState({ isBusy: true });
+  dijkstrasCaller() {
     const start = this.state.nodes[START_NODE_ROW][START_NODE_COL];
     const finish = this.state.nodes[FINISH_NODE_ROW][FINISH_NODE_COL];
     visitedOrder = dijkstras(this.state.nodes, start, finish);
-    foundPath = this.getNodesInShortestPathOrder(finish);
-    this.animateVisiting(visitedOrder, foundPath);
+    foundPath = getNodesInShortestPathOrder(finish);
+    animateVisiting(visitedOrder, foundPath, timeouts, ANIMATION_SPEED_MS);
   }
 
-  bfs() {
-    this.resetPath();
-    this.setState({ isBusy: true });
+  bfsCaller() {
     const start = this.state.nodes[START_NODE_ROW][START_NODE_COL];
     const finish = this.state.nodes[FINISH_NODE_ROW][FINISH_NODE_COL];
     visitedOrder = bfs(this.state.nodes, start, finish);
-    foundPath = this.getNodesInShortestPathOrder(finish);
-    this.animateVisiting(visitedOrder, foundPath);
+    foundPath = getNodesInShortestPathOrder(finish);
+    animateVisiting(visitedOrder, foundPath, timeouts, ANIMATION_SPEED_MS);
   }
 
-  dfs() {
-    this.resetPath();
-    this.setState({ isBusy: true });
+  dfsCaller() {
     const start = this.state.nodes[START_NODE_ROW][START_NODE_COL];
     const finish = this.state.nodes[FINISH_NODE_ROW][FINISH_NODE_COL];
     visitedOrder = dfs(this.state.nodes, start, finish);
-    foundPath = this.getNodesInShortestPathOrder(finish);
-    this.animateVisiting(visitedOrder, foundPath);
+    foundPath = getNodesInShortestPathOrder(finish);
+    animateVisiting(visitedOrder, foundPath, timeouts, ANIMATION_SPEED_MS);
   }
 
-  start = () => {
+  start() {
     var value = document.getElementById("pathfinding").value;
+    this.resetPath();
+    // this.setState({ isBusy: true });
     switch (value) {
       case "1":
-        this.dijkstras();
+        this.dijkstrasCaller();
         break;
       case "2":
-        this.bfs();
+        this.bfsCaller();
         break;
       case "3":
-        this.dfs();
+        this.dfsCaller();
         break;
       case "4":
         this.selectionSort();
@@ -297,10 +232,23 @@ export default class PathFindingVisualiser extends Component {
       default:
         break;
     }
-  };
+  }
+
+  recursiveDiv(orientation) {
+    const wallsOrder = recursiveDivision(
+      this.state.nodes,
+      0,
+      0,
+      20,
+      55,
+      orientation
+    );
+    this.animateWalls(wallsOrder, this.state.nodes);
+  }
 
   createMaze() {
     var value = document.getElementById("mazes").value;
+    this.reset();
     switch (value) {
       case "1":
         this.recursiveDiv();
@@ -329,22 +277,6 @@ export default class PathFindingVisualiser extends Component {
     for (var i = 0; i < timeouts.length; i++) clearTimeout(timeouts[i]);
     timeouts = [];
     this.setState({ isBusy: false });
-  }
-
-  reset() {
-    this.clearTimeout_();
-    for (var i = 0; i < this.state.nodes.length; i++) {
-      for (var j = 0; j < this.state.nodes[i].length; j++) {
-        const node = this.state.nodes[i][j];
-        if (node.isStart || node.isFinish) {
-          continue;
-        }
-        if (node.isWall) node.isWall = false;
-        document.getElementById(`node-${node.row}-${node.col}`).className =
-          "node";
-      }
-    }
-    this.setState({ nodes: generateNodes(), isBusy: false });
   }
 
   calculateComplexity = (e) => {
@@ -519,92 +451,51 @@ export default class PathFindingVisualiser extends Component {
       </div>
     );
   }
-}
 
-function generateNodes() {
-  const nodes = [];
-  for (var row = 0; row < 20; row++) {
-    const currentRow = [];
-    for (var col = 0; col < 55; col++) {
-      currentRow.push(createNode(row, col));
+  resetPath() {
+    for (var i = 0; i < this.state.nodes.length; i++) {
+      for (var j = 0; j < this.state.nodes[i].length; j++) {
+        const node = this.state.nodes[i][j];
+        node.isVisited = false;
+        node.distance = Infinity;
+        node.previousNode = null;
+        if (!node.isStart && !node.isFinish) {
+          if (node.isWall) {
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-wall";
+          } else
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node";
+        }
+      }
     }
-    nodes.push(currentRow);
-  }
-  return nodes;
-}
-
-function createNode(row, col) {
-  return {
-    col,
-    row,
-    isVisited: false,
-    isStart: row === START_NODE_ROW && col === START_NODE_COL,
-    isFinish: row === FINISH_NODE_ROW && col === FINISH_NODE_COL,
-    isWall: false,
-    distance: Infinity,
-    previousNode: null,
-  };
-}
-
-function getNewNodesWithWallToggled(nodes, row, col) {
-  const newNodes = nodes.slice();
-  const node = newNodes[row][col];
-  const newNode = {
-    ...node,
-    isWall: !node.isWall,
-  };
-  newNodes[row][col] = newNode;
-  return newNodes;
-}
-
-function resetEnds(nodes, row, col) {
-  const newNodes = nodes.slice();
-  const node = newNodes[row][col];
-  var newNode = {};
-  if (node.isStart) {
-    newNode = {
-      ...node,
-      isStart: false,
-    };
-  } else {
-    newNode = {
-      ...node,
-      isFinish: false,
-    };
   }
 
-  newNodes[row][col] = newNode;
-  return newNodes;
-}
-
-function getNewNodesWithNewEnds(
-  nodes,
-  row,
-  col,
-  isStartChanged,
-  isFinishChanged
-) {
-  const newNodes = nodes.slice();
-  const node = newNodes[row][col];
-  var newNode = {};
-  if (isStartChanged) {
-    START_NODE_ROW = row;
-    START_NODE_COL = col;
-    newNode = {
-      ...node,
-      isStart: true,
-      isWall: false,
-    };
-  } else if (isFinishChanged) {
-    FINISH_NODE_ROW = row;
-    FINISH_NODE_COL = col;
-    newNode = {
-      ...node,
-      isFinish: true,
-      isWall: false,
-    };
+  reset() {
+    this.clearTimeout_();
+    for (var i = 0; i < this.state.nodes.length; i++) {
+      for (var j = 0; j < this.state.nodes[i].length; j++) {
+        const node = this.state.nodes[i][j];
+        if (node.isWall) node.isWall = false;
+        if (node.isStart) {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+            "node node-start";
+        } else if (node.isFinish) {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+            "node node-finish";
+        } else
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+            "node";
+      }
+    }
+    this.setState({
+      nodes: generateNodes(
+        START_NODE_ROW,
+        START_NODE_COL,
+        FINISH_NODE_ROW,
+        FINISH_NODE_COL
+      ),
+      isBusy: false,
+    });
   }
-
-  newNodes[row][col] = newNode;
-  return newNodes;
 }
