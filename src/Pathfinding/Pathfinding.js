@@ -188,6 +188,11 @@ export default class PathFindingVisualiser extends Component {
     visitedOrder = dijkstras(this.state.nodes, start, finish);
     foundPath = getNodesInShortestPathOrder(finish);
     animateVisiting(visitedOrder, foundPath, timeouts, ANIMATION_SPEED_MS);
+    timeouts.push(
+      setTimeout(() => {
+        this.animateShortestPath(foundPath);
+      }, (visitedOrder.length - 1) * ANIMATION_SPEED_MS)
+    );
   }
 
   bfsCaller() {
@@ -196,6 +201,11 @@ export default class PathFindingVisualiser extends Component {
     visitedOrder = bfs(this.state.nodes, start, finish);
     foundPath = getNodesInShortestPathOrder(finish);
     animateVisiting(visitedOrder, foundPath, timeouts, ANIMATION_SPEED_MS);
+    timeouts.push(
+      setTimeout(() => {
+        this.animateShortestPath(foundPath);
+      }, (visitedOrder.length - 1) * ANIMATION_SPEED_MS)
+    );
   }
 
   dfsCaller() {
@@ -204,12 +214,17 @@ export default class PathFindingVisualiser extends Component {
     visitedOrder = dfs(this.state.nodes, start, finish);
     foundPath = getNodesInShortestPathOrder(finish);
     animateVisiting(visitedOrder, foundPath, timeouts, ANIMATION_SPEED_MS);
+    timeouts.push(
+      setTimeout(() => {
+        this.animateShortestPath(foundPath);
+      }, (visitedOrder.length - 1) * ANIMATION_SPEED_MS)
+    );
   }
 
   start() {
     var value = document.getElementById("pathfinding").value;
     this.resetPath();
-    // this.setState({ isBusy: true });
+    this.setState({ isBusy: true });
     switch (value) {
       case "1":
         this.dijkstrasCaller();
@@ -244,11 +259,17 @@ export default class PathFindingVisualiser extends Component {
       orientation
     );
     this.animateWalls(wallsOrder, this.state.nodes);
+    timeouts.push(
+      setTimeout(() => {
+        this.setState({ isBusy: false });
+      }, (wallsOrder.length - 1) * ANIMATION_SPEED_MS)
+    );
   }
 
   createMaze() {
     var value = document.getElementById("mazes").value;
     this.reset();
+    this.setState({ isBusy: true });
     switch (value) {
       case "1":
         this.recursiveDiv();
@@ -469,6 +490,37 @@ export default class PathFindingVisualiser extends Component {
         }
       }
     }
+  }
+
+  animateShortestPath(nodesInShortestPathOrder) {
+    for (let i = 0; i < nodesInShortestPathOrder.length; i++) {
+      const node = nodesInShortestPathOrder[i];
+      if (node.isStart) {
+        timeouts.push(
+          setTimeout(() => {
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-start nodes-bg";
+          }, i * ANIMATION_SPEED_MS)
+        );
+        continue;
+      }
+      if (node.isFinish) {
+        timeouts.push(
+          setTimeout(() => {
+            document.getElementById(`node-${node.row}-${node.col}`).className =
+              "node node-finish nodes-bg";
+          }, i * ANIMATION_SPEED_MS)
+        );
+        continue;
+      }
+      timeouts.push(
+        setTimeout(() => {
+          document.getElementById(`node-${node.row}-${node.col}`).className =
+            "node node-shortest-path";
+        }, i * ANIMATION_SPEED_MS)
+      );
+    }
+    this.setState({ isBusy: false });
   }
 
   reset() {
