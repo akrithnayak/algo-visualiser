@@ -18,6 +18,7 @@ import {
   getNewNodesWithWallToggled,
   resetEnds,
 } from "./helpers/nodes";
+import { aStar } from "./pathfindingalgos/astar";
 
 var START_NODE_ROW = 10;
 var START_NODE_COL = 15;
@@ -221,6 +222,19 @@ export default class PathFindingVisualiser extends Component {
     );
   }
 
+  astarCaller() {
+    const start = this.state.nodes[START_NODE_ROW][START_NODE_COL];
+    const finish = this.state.nodes[FINISH_NODE_ROW][FINISH_NODE_COL];
+    visitedOrder = aStar(this.state.nodes, start, finish);
+    foundPath = getNodesInShortestPathOrder(finish);
+    animateVisiting(visitedOrder, foundPath, timeouts, ANIMATION_SPEED_MS);
+    timeouts.push(
+      setTimeout(() => {
+        this.animateShortestPath(foundPath);
+      }, (visitedOrder.length - 1) * ANIMATION_SPEED_MS)
+    );
+  }
+
   start() {
     var value = document.getElementById("pathfinding").value;
     this.resetPath();
@@ -236,13 +250,7 @@ export default class PathFindingVisualiser extends Component {
         this.dfsCaller();
         break;
       case "4":
-        this.selectionSort();
-        break;
-      case "5":
-        this.heapSort();
-        break;
-      case "6":
-        this.bubbleSort();
+        this.astarCaller();
         break;
       default:
         break;
@@ -280,15 +288,6 @@ export default class PathFindingVisualiser extends Component {
       case "3":
         this.recursiveDiv(0);
         break;
-      case "4":
-        this.selectionSort();
-        break;
-      case "5":
-        this.heapSort();
-        break;
-      case "6":
-        this.bubbleSort();
-        break;
       default:
         break;
     }
@@ -310,16 +309,16 @@ export default class PathFindingVisualiser extends Component {
         sc.innerHTML = "O(V)";
         break;
       case "2":
-        tc.innerHTML = "O(nlogn)";
-        sc.innerHTML = "O(logn)";
+        tc.innerHTML = "O(V+E)";
+        sc.innerHTML = "O(V)";
         break;
       case "3":
-        tc.innerHTML = "O(V²)";
-        sc.innerHTML = "O(1)";
+        tc.innerHTML = "O(V+E)";
+        sc.innerHTML = "O(V)";
         break;
       case "4":
-        tc.innerHTML = "O(n²)";
-        sc.innerHTML = "O(1)";
+        tc.innerHTML = "O(E)";
+        sc.innerHTML = "O(V)";
         break;
       case "5":
         tc.innerHTML = "O(nlogn)";
@@ -384,9 +383,7 @@ export default class PathFindingVisualiser extends Component {
                   <option value="1">Dijktras's Algorithm</option>
                   <option value="2">BFS</option>
                   <option value="3">DFS</option>
-                  <option value="4">Krushkal's Algorithm</option>
-                  <option value="5">HeapSort</option>
-                  <option value="6">BubbleSort</option>
+                  <option value="4">A*</option>
                 </select>
 
                 <select
@@ -400,8 +397,6 @@ export default class PathFindingVisualiser extends Component {
                   <option value="3">
                     Recursive Division (horizontal skew)
                   </option>
-                  <option value="4">Basic Random Maze</option>
-                  <option value="5">Simple Stair Pattern</option>
                 </select>
               </NavItem>
               <NavItem className="mr-5 text-white" style={{ width: "30px" }}>
