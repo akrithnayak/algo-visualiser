@@ -23,7 +23,6 @@ function dfsHelper(grid, currentNode, finish, visitedOrder, compare) {
       temp_node.previousNode = currentNode;
       visitedOrder.push(temp_node);
       if (temp_node === finish) {
-        console.log("Rschd");
         compare.found = true;
         return true;
       }

@@ -68,6 +68,11 @@ export const aStar = (grid, start, finish) => {
 
 function calculateManhattan(row, col, finish) {
   return Math.abs(row - finish.row) + Math.abs(col - finish.col);
+  //   return Math.sqrt(
+  //     (row - finish.row) * (row - finish.row) +
+  //       (col - finish.col) * (col - finish.col)
+  //   );
+  // return Msath.max(Math.abs(row - finish.row), Math.abs(col - finish.col));
 }
 
 function sortQueue(nodes) {
